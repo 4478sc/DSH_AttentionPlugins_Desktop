@@ -21,7 +21,7 @@ jobs:
           node --check lib/typert.host.js
           node --check lib/client.js
       - name: Manifest tests
-        run: node tests/manifest.test.mjs
+        run: node tests/manifest.test.mjs && node tests/client-logic.test.mjs
       - name: Syntax (python host)
         run: python -m py_compile lib/toast_host.py
       - name: Syntax (powershell host)

@@ -10,9 +10,9 @@ and follows the design of a third; all three are credited here.
 - Copyright (c) 2026 zjbc2000
 - Used for: notification engine (main-line / side-line edges, settle window,
   batch aggregation), four event types, settings model, composer star and
-  session-row menu markers, bilingual copy. Based on the 0.2.1 line; upstream
-  0.2.2 additions (three-way task mode, current-session tiers, sub-agent wait,
-  per-session mute, custom audio, click-through) are **not** merged yet.
+  session-row menu markers, bilingual copy. Based on the 0.2.1 line, with the 0.2.2 behaviours re-implemented here:
+  three-way task mode (including silent), current-session tiers, wait-for-subagents
+  and per-session mute. Custom audio and click-through are not implemented.
 
 attention-plugins is itself a rewrite of @dingyi222666/dsh-session-notification,
 which is BSD-3-Clause. Its notice is reproduced below.

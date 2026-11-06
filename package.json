@@ -1,6 +1,6 @@
 {
   "name": "dsh-attention-toast",
-  "version": "0.2.2-desktop.1",
+  "version": "0.2.2-desktop.2",
   "private": false,
   "type": "module",
   "description": "Desktop edition of attention-plugins for DeepSeek Harness: task-priority notifications delivered as bottom-right desktop toasts (Windows WPF / Linux GTK) instead of sounds or browser notifications.",
@@ -39,7 +39,7 @@
     "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
-    "test": "node tests/manifest.test.mjs",
+    "test": "node tests/manifest.test.mjs && node tests/client-logic.test.mjs",
     "smoke:toast": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-toast.ps1",
     "pack": "npm pack"
   },
