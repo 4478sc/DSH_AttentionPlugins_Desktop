@@ -1,6 +1,6 @@
 {
   "name": "dsh-attention-toast",
-  "version": "0.2.2-desktop.4",
+  "version": "0.2.2-desktop.6",
   "private": false,
   "type": "module",
   "description": "Desktop edition of attention-plugins for DeepSeek Harness: task-priority notifications delivered as bottom-right desktop toasts (Windows WPF / Linux GTK) instead of sounds or browser notifications.",

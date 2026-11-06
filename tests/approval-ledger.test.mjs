@@ -37,6 +37,16 @@ test('normalizeRecord is tolerant about field names and shape', () => {
   assert.equal(normalizeRecord({}), null)
 })
 
+test('delegated decisions are classified by outcome, not by the decision string', () => {
+  const approved = normalizeRecord({ ts: 'x', tool: 'pwsh', decision: 'delegated', outcome: 'allowed-once' })
+  assert.equal(approved.kind, 'approved')
+  assert.equal(approved.decision, 'delegated')
+  const denied = normalizeRecord({ ts: 'x', tool: 'bash', decision: 'auto-deny', outcome: 'rejected' })
+  assert.equal(denied.kind, 'rejected')
+  const auto = normalizeRecord({ ts: 'x', tool: 'read', decision: 'auto-allow' })
+  assert.equal(auto.kind, 'approved')
+})
+
 test('parseChunk skips malformed lines and keeps good ones', () => {
   const text = [
     '{"ts":"a","tool":"bash","risk":"low","decision":"allowed-once"}',
