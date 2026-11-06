@@ -42,6 +42,7 @@ _任务完成时的右下角浮窗（Windows / WPF 实拍）。_
 - 🔕 **会话静音**：会话行「…」菜单可单独静音/取消静音，该会话所有事件都不弹。
 - 👁 **当前会话三档**：仅在后台 / 失焦或后台 / 总是提醒。
 - ✅ **4 类事件**：完成 / 出错 / 提问 / 审批，逐项开关；提问与审批永远打断。
+- 🔎 **审批结果联动（只读，可选）**：安装 dsh-approval-ledger 后，审批结束会再弹一条「已批准 / 已拒绝」，风险等级仅供参考。
 - 🪟 **桌面浮窗**：右下角堆叠（最多 1–6 个），按类型配色，4/6/8/12 秒自动关闭，悬停暂停，点击或 ✕ 关闭；高度按内容自适应。
 - 🖥 **不依赖页面**：浮窗由宿主插件的常驻进程渲染（Windows: PowerShell + WPF；Linux: python3 + GTK3）。
 - 🌗 **中英双语设置面板**：设置 → Attention Toast，含「测试浮窗」「重启宿主」与宿主连接状态。
@@ -87,7 +88,7 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 
 # 2) 安装（写 C:\Users\<you>\.dsh，需完整访问权限）
 & "A:\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add `
-    "C:\Users\<you>\.dsh\plugin-packages\dsh-attention-toast-0.2.2-desktop.3.tgz"
+    "C:\Users\<you>\.dsh\plugin-packages\dsh-attention-toast-0.2.2-desktop.4.tgz"
 
 # 3) 重启 DSH 桌面版
 ```
@@ -109,6 +110,13 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 | 宿主单实例 pid | `$DSH_HOME/storages/dsh-attention-toast/host.pid` |
 
 总开关默认**开启**；「当前会话也提醒」默认关闭（正在看的会话完成时不打扰，窗口最小化时仍提醒）。
+
+## 免责声明
+
+- 浮窗里的**风险等级来自可选的 [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) 台账，仅供参考**，不构成安全保证，也不代表本插件会对操作做风险判断。
+- 本插件**只读**该台账文件（`$DSH_HOME/approval-ledger/ledger.jsonl`），不拦截、不批准、不修改任何审批决策；审批行为与结果由 DSH 与台账插件负责。
+- 台账缺失、格式变化或数据错误时，本插件会自动降级为“无审批联动”，不影响通知功能。
+- 是否依据这些提示做出决定由你自行判断，使用后果自负。
 
 ## 排障
 

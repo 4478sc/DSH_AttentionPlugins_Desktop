@@ -26,6 +26,14 @@ which is BSD-3-Clause. Its notice is reproduced below.
   colors and durations. The Windows (WPF) and Linux (GTK) hosts here were
   written from scratch for this project; the idea and wire shape follow it.
 
+## @deepwhale-cn/dsh-approval-ledger — optional, not bundled
+
+- Upstream: <https://github.com/feely0208/dsh-approval-ledger> (MIT, © 温州深鲸智能科技有限公司)
+- This project does **not** copy its code. If it is installed, this plugin reads the
+  JSONL file it writes (`$DSH_HOME/approval-ledger/ledger.jsonl`) to show a
+  "decision" toast. Risk levels in that file are advisory only and are shown as
+  "reference only"; no warranty is given for their accuracy.
+
 ## DeepSeek Harness
 
 The plugin targets the DSH plugin API (Cordis services, Typert remote

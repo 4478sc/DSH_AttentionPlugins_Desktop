@@ -85,7 +85,7 @@ test('settings section renders every block (root div stays open)', () => {
   const tree = api.SettingsSection()
   assert.equal(tree.props.className, 'att-root')
   const blocks = tree.kids.map((k) => (k && k.props ? k.props.className : ''))
-  assert.deepEqual(blocks, ['att-hero', 'att-block', 'att-block', 'att-block', 'att-block', 'att-foot'])
+  assert.deepEqual(blocks, ['att-hero', 'att-block', 'att-block', 'att-block', 'att-block', 'att-block', 'att-foot'])
   const eventsBlock = tree.kids[3]
   assert.equal(eventsBlock.kids.length, 2)
   assert.ok(Array.isArray(eventsBlock.kids[1]), 'events block renders one row per event type')
