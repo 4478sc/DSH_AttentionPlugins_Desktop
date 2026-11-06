@@ -93,3 +93,12 @@ test('settings section renders every block (root div stays open)', () => {
   const lookBlock = tree.kids[4]
   assert.equal(lookBlock.kids.length, 4, 'appearance block: title + duration + max + current session')
 })
+
+test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
+  assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
+  assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')
+  assert.equal(api.predictRisk('chmod 777 /tmp/x'), 'high')
+  assert.equal(api.predictRisk('删除 build 目录'), 'medium')
+  assert.equal(api.predictRisk('list files'), 'low')
+  assert.equal(api.predictRisk('   '), 'unknown')
+})
