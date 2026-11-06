@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+__pycache__/
+*.pyc
+*.log
+.dsh-dev/
+.DS_Store
+Thumbs.db
+.vscode/
+coverage/

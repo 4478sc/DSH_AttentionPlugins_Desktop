@@ -1,0 +1,48 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { TYPERT } from '../lib/typert.host.js'
+
+test('typert manifest is owned by the package and exposes the host face', () => {
+  assert.equal(TYPERT.package, 'dsh-attention-toast')
+  assert.equal(TYPERT.face, 'host')
+  assert.ok(Array.isArray(TYPERT.invocations) && TYPERT.invocations.length >= 5)
+})
+
+test('every invocation is a strict direct invocation of the attentionToast service', () => {
+  const methods = new Set()
+  for (const inv of TYPERT.invocations) {
+    assert.equal(inv.service, 'attentionToast')
+    assert.equal(inv.namespace, 'attentionToast')
+    assert.equal(inv.invocation.kind, 'direct')
+    assert.equal(inv.id, 'dsh-attention-toast#attentionToast/' + inv.method)
+    assert.equal(inv.result.mode, 'strict')
+    assert.equal(typeof inv.result.create, 'function')
+    for (const p of inv.parameters) {
+      assert.equal(p.source, 'json')
+      assert.equal(p.codec.mode, 'strict')
+      assert.equal(typeof p.codec.create, 'function')
+    }
+    methods.add(inv.method)
+  }
+  const declared = new Set(TYPERT.model.services[0].members.map((m) => m.name))
+  assert.deepEqual([...methods].sort(), [...declared].sort())
+})
+
+test('show payload schema accepts the toast contract and rejects unknown kinds', () => {
+  const inv = TYPERT.invocations.find((i) => i.method === 'show')
+  const schema = inv.parameters[0].codec.schema
+  const parsed = schema.parse({ kind: 'completed', title: 't', text: 'b', durationMs: 4000 })
+  assert.equal(parsed.kind, 'completed')
+  assert.throws(() => schema.parse({ kind: 'nope', title: 't' }))
+})
+
+test('config schema round-trips the default desktop config', () => {
+  const inv = TYPERT.invocations.find((i) => i.method === 'updateConfig')
+  const schema = inv.result.schema
+  const color = { bg: '#000000', fg: '#ffffff', accent: '#ff0000' }
+  const cfg = {
+    locale: 'zh', width: 340, durationMs: 8000, maxVisible: 3,
+    colors: { completed: color, failed: color, question: color, permission: color, sidelinedone: color },
+  }
+  assert.deepEqual(schema.parse(cfg), cfg)
+})

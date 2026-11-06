@@ -1,0 +1,6 @@
+# Bundle patch for dsh-attention-toast: one host row.
+# The row name resolves from the profile's node_modules, where
+# `dsh plugin --profile desktop add <path>` (or a manual pnpm link) put it.
+- insert:
+    - id: dsh-attention-toast
+      name: dsh-attention-toast

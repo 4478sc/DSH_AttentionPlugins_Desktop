@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install zod for the manifest test
+        run: npm install --no-save zod@4
+      - name: Syntax (node)
+        run: |
+          node --check lib/index.js
+          node --check lib/typert.host.js
+          node --check lib/client.js
+      - name: Manifest tests
+        run: node tests/manifest.test.mjs
+      - name: Syntax (python host)
+        run: python -m py_compile lib/toast_host.py
+      - name: Syntax (powershell host)
+        shell: pwsh
+        run: |
+          $err = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path lib/toast_host.ps1), [ref]$null, [ref]$err)
+          if ($err) { $err | ForEach-Object { Write-Error $_.Message }; exit 1 }
