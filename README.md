@@ -87,7 +87,7 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 
 # 2) 安装（写 C:\Users\<you>\.dsh，需完整访问权限）
 & "A:\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add `
-    "C:\Users\<you>\.dsh\plugin-packages\dsh-attention-toast-0.2.2-desktop.2.tgz"
+    "C:\Users\<you>\.dsh\plugin-packages\dsh-attention-toast-0.2.2-desktop.3.tgz"
 
 # 3) 重启 DSH 桌面版
 ```

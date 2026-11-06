@@ -11,8 +11,8 @@ globalThis.window = {
 }
 globalThis.document = { hidden: false, hasFocus: () => true }
 const reactStub = {
-  createElement: () => null,
-  useSyncExternalStore: () => [],
+  createElement: (type, props, ...kids) => ({ type: typeof type === 'function' ? (type.name || 'fn') : type, props: props || {}, kids }),
+  useSyncExternalStore: (sub, get) => get(),
   useEffect: () => {},
   useState: () => [null, () => {}],
   useCallback: (fn) => fn,
@@ -79,4 +79,17 @@ test('countRunningChildren only counts running direct children', () => {
   ]
   assert.equal(api.countRunningChildren('p', rows), 1)
   assert.equal(api.countRunningChildren('z', rows), 0)
+})
+
+test('settings section renders every block (root div stays open)', () => {
+  const tree = api.SettingsSection()
+  assert.equal(tree.props.className, 'att-root')
+  const blocks = tree.kids.map((k) => (k && k.props ? k.props.className : ''))
+  assert.deepEqual(blocks, ['att-hero', 'att-block', 'att-block', 'att-block', 'att-block', 'att-foot'])
+  const eventsBlock = tree.kids[3]
+  assert.equal(eventsBlock.kids.length, 2)
+  assert.ok(Array.isArray(eventsBlock.kids[1]), 'events block renders one row per event type')
+  assert.equal(eventsBlock.kids[1].length, 4)
+  const lookBlock = tree.kids[4]
+  assert.equal(lookBlock.kids.length, 4, 'appearance block: title + duration + max + current session')
 })
