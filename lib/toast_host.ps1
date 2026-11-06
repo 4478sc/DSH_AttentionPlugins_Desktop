@@ -228,11 +228,11 @@ function Show-Toast($payload) {
   $card.Child = $grid
   $win.Content = $card
 
-  try {
-    $card.Measure([System.Windows.Size]::new([double]$script:Config.width, [double]::PositiveInfinity))
-    $fitted = [Math]::Ceiling($card.DesiredSize.Height)
-    if ($fitted -ge 48) { $win.Height = $fitted + 10 }
-  } catch { }
+  # Height: fixed conservative tiers (WPF measurement under-reports on scaled
+  # displays); the body is clamped to three lines in the card itself.
+  # Three-line card: fixed 132 px. WPF measurement under-reports on scaled
+  # displays (125% here), and a taller card is better than clipped text.
+  $win.Height = if ([string]::IsNullOrEmpty($text)) { 96 } else { 132 }
 
   $toast = [pscustomobject]@{
     Id = $id; Win = $win; Timer = $null; Closed = $false; Seq = $script:Seq; Duration = $duration

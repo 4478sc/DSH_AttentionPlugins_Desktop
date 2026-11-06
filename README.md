@@ -1,5 +1,8 @@
 # DSH_AttentionPlugins_Desktop
 
+[![ci](https://github.com/4478sc/DSH_AttentionPlugins_Desktop/actions/workflows/ci.yml/badge.svg)](https://github.com/4478sc/DSH_AttentionPlugins_Desktop/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > **Desktop edition of [attention-plugins](https://github.com/zjbc2000/attention-plugins).**
 > Main-line tasks interrupt you, side-line tasks can batch, questions and approvals
 > always interrupt — delivered as a **bottom-right desktop toast** on Windows (WPF)
@@ -22,6 +25,12 @@ DSH（DeepSeek Harness）同时开五个会话是常态，默认“每个任务�
 | 主线标记 | 输入框 ★ + 会话菜单 + 侧栏星标 | 输入框 ★ + 会话菜单（无侧栏星标） |
 | 任务模式 | 三档 mainline / balanced / silent | 两档主线 / 均衡 + 独立支线开关 |
 | 子智能体等待 / 会话静音 / 点击打开会话 | 有 | 未合并（见路线图） |
+
+## 效果
+
+![Windows 浮窗](docs/images/toast-win.png)
+
+_任务完成时的右下角浮窗（Windows / WPF 实拍）。_
 
 ## 功能
 
