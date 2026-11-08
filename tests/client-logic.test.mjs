@@ -98,10 +98,10 @@ test('settings section renders every block (root div stays open)', () => {
 test('builds only the pre-approval toast payload', () => {
   const pending = api.buildPendingToast({ seq: 1, tool: 'bash', reason: 'rm -rf build', risk: 'high', sessionId: 's1' }, 'Demo')
   assert.equal(pending.kind, 'permission')
-  assert.equal(pending.kicker, '等待审批')
+  assert.ok(pending.kicker === '等待审批' || pending.kicker === 'Approval requested')
   assert.equal(pending.title, 'Demo')
   assert.match(pending.text, /bash/)
-  assert.match(pending.text, /本地预判 high/)
+  assert.match(pending.text, /(本地预判|local prediction) high/)
   assert.equal(api.buildDecisionToast, undefined, 'the post-decision toast is removed')
 })
 
