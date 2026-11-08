@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { normalizeRecord, parseChunk, decisionKind } from '../lib/approval-ledger.js'
+import { normalizeRecord, parseChunk, decisionKind, predictRisk, summarizeItems } from '../lib/approval-ledger.js'
 
 test('decisionKind maps the four DSH approval outcomes', () => {
   assert.equal(decisionKind('allowed-once'), 'approved')
@@ -45,6 +45,26 @@ test('delegated decisions are classified by outcome, not by the decision string'
   assert.equal(denied.kind, 'rejected')
   const auto = normalizeRecord({ ts: 'x', tool: 'read', decision: 'auto-allow' })
   assert.equal(auto.kind, 'approved')
+})
+
+test('summarizeItems counts the recent ledger window', () => {
+  const stats = summarizeItems([
+    { risk: 'high', kind: 'rejected' },
+    { risk: 'high', kind: 'approved' },
+    { risk: 'low', kind: 'approved' },
+    { risk: 'medium', kind: 'rejected' },
+  ])
+  assert.deepEqual(stats, { total: 4, high: 2, rejected: 2 })
+  assert.deepEqual(summarizeItems([]), { total: 0, high: 0, rejected: 0 })
+  assert.deepEqual(summarizeItems(null), { total: 0, high: 0, rejected: 0 })
+})
+
+test('predictRisk mirrors the ledger high/medium heuristic', () => {
+  assert.equal(predictRisk('bash rm -rf /tmp/x'), 'high')
+  assert.equal(predictRisk('sudo apt install x'), 'high')
+  assert.equal(predictRisk('删除 build 目录'), 'medium')
+  assert.equal(predictRisk('list files'), 'low')
+  assert.equal(predictRisk(''), 'unknown')
 })
 
 test('parseChunk skips malformed lines and keeps good ones', () => {
