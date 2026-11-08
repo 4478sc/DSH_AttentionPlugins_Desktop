@@ -10,6 +10,7 @@ globalThis.window = {
   __ModuleLoader__: { load: (mod) => { captured = mod } },
 }
 globalThis.document = { hidden: false, hasFocus: () => true }
+globalThis.localStorage = { getItem: () => null, setItem: () => {} }
 const reactStub = {
   createElement: (type, props, ...kids) => ({ type: typeof type === 'function' ? (type.name || 'fn') : type, props: props || {}, kids }),
   useSyncExternalStore: (sub, get) => get(),
@@ -92,6 +93,30 @@ test('settings section renders every block (root div stays open)', () => {
   assert.equal(eventsBlock.kids[1].length, 4)
   const lookBlock = tree.kids[4]
   assert.equal(lookBlock.kids.length, 4, 'appearance block: title + duration + max + current session')
+})
+
+test('builds only the pre-approval toast payload', () => {
+  const pending = api.buildPendingToast({ seq: 1, tool: 'bash', reason: 'rm -rf build', risk: 'high', sessionId: 's1' }, 'Demo')
+  assert.equal(pending.kind, 'permission')
+  assert.equal(pending.kicker, '等待审批')
+  assert.equal(pending.title, 'Demo')
+  assert.match(pending.text, /bash/)
+  assert.match(pending.text, /本地预判 high/)
+  assert.equal(api.buildDecisionToast, undefined, 'the post-decision toast is removed')
+})
+
+test('the approvalToasts and permission switches gate the pending toast', () => {
+  const pending = { seq: 5, tool: 'bash', reason: 'rm -rf build', risk: 'high', sessionId: 's1' }
+  try {
+    api.patchSettings({ approvalToasts: false })
+    assert.equal(api.buildPendingToast(pending, 'Demo'), null)
+    api.patchSettings({ approvalToasts: true })
+    assert.ok(api.buildPendingToast(pending, 'Demo'))
+    api.patchSettings({ types: { ...api.normalizeSettings({}).types, permission: false } })
+    assert.equal(api.buildPendingToast(pending, 'Demo'), null)
+  } finally {
+    api.patchSettings({ approvalToasts: true, types: api.normalizeSettings({}).types })
+  }
 })
 
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {

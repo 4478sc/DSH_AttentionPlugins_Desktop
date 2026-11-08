@@ -43,7 +43,7 @@ _任务完成时的右下角浮窗（Windows / WPF 实拍）。_
 - 👁 **当前会话三档**：仅在后台 / 失焦或后台 / 总是提醒。
 - ✅ **4 类事件**：完成 / 出错 / 提问 / 审批，逐项开关；提问与审批永远打断。
 - ⚠️ **审批前风险预判**：等待审批的浮窗会附上本地正则预判的风险等级（high/medium），**仅供参考**。
-- 👮 **审批前预判**：等待审批时弹一张「等待审批 · 预判风险 high（仅供参考）」，批准后不再重复弹窗；台账只用于设置页查看最近记录。
+- 👮 **审批联动（只读）**：安装 [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) 后，等待审批时弹一张「等待审批 · 本地预判风险」浮窗；批准 / 拒绝 / 取消只写入台账，**不再弹结果浮窗**。设置页显示台账连接状态、最近统计与最近 5 条记录。
 - 🪟 **桌面浮窗**：右下角堆叠（最多 1–6 个），按类型配色，4/6/8/12 秒自动关闭，悬停暂停，点击或 ✕ 关闭；高度按内容自适应。
 - 🖥 **不依赖页面**：浮窗由宿主插件的常驻进程渲染（Windows: PowerShell + WPF；Linux: python3 + GTK3）。
 - 🌗 **中英双语设置面板**：设置 → Attention Toast，含「测试浮窗」「重启宿主」与宿主连接状态。
@@ -109,12 +109,13 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 | 浮窗外观（配色、时长、同屏数量） | `$DSH_HOME/storages/dsh-attention-toast/config.json` |
 | 宿主诊断日志 | `$DSH_HOME/storages/dsh-attention-toast/host.log` |
 | 宿主单实例 pid | `$DSH_HOME/storages/dsh-attention-toast/host.pid` |
+| 审批台账（只读，由 dsh-approval-ledger 写入） | `$DSH_HOME/approval-ledger/ledger.jsonl` |
 
 总开关默认**开启**；「当前会话也提醒」默认关闭（正在看的会话完成时不打扰，窗口最小化时仍提醒）。
 
 ## 免责声明
 
-- 「等待审批」浮窗里的**预判风险**由本地正则特征匹配得出，「已批准/已拒绝」里的风险来自可选的 [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) 台账；两者都**仅供参考**，不构成安全保证，也不代表本插件会对操作做风险判断。
+- 「等待审批」浮窗里的**预判风险**由本地正则特征匹配得出；批准 / 拒绝 / 取消后的风险由可选的 [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) 台账记录，但**不再弹结果浮窗**。预判**仅供参考**，不构成安全保证，也不代表本插件会对操作做风险判断。
 - 本插件**只读**该台账文件（`$DSH_HOME/approval-ledger/ledger.jsonl`），不拦截、不批准、不修改任何审批决策；审批行为与结果由 DSH 与台账插件负责。
 - 台账缺失、格式变化或数据错误时，本插件会自动降级为“无审批联动”，不影响通知功能。
 - 是否依据这些提示做出决定由你自行判断，使用后果自负。
@@ -130,10 +131,15 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 ## 开发与测试
 
 ```powershell
-node --test tests/              # Typert 清单与协议形状
-node --check lib/index.js
+npm test                       # 清单、台账适配器、客户端逻辑
 python -m py_compile lib/toast_host.py
 powershell -NoProfile -File scripts/smoke-toast.ps1   # 需要桌面会话
+```
+
+跨插件联动（台账写入 → 适配器 → 浮窗载荷）的端到端测试在工作区根目录：
+
+```bash
+node tests/integration.test.mjs
 ```
 
 ## 路线图
@@ -166,6 +172,11 @@ GTK3 on Linux).
   summary, questions and approvals always interrupt.
 - Toasts: stacked, color-coded per event, auto-dismiss (4/6/8/12 s), pause on
   hover, click or ✕ to close, height follows content.
+- Optional read-only approval-ledger bridge: pending approvals carry a local risk
+  prediction; approve / reject / cancel decisions are recorded by
+  [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) but do **not**
+  pop a second toast. The settings page shows the ledger connection, recent stats and
+  the last five decisions.
 - Install from a tarball (`dsh plugin --profile desktop add <tgz>`); never use
   `link:` for the installed copy.
 - MIT. Built on attention-plugins (MIT, © zjbc2000) and inspired by
