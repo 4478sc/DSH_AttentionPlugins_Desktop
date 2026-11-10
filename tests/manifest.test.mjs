@@ -36,6 +36,21 @@ test('show payload schema accepts the toast contract and rejects unknown kinds',
   assert.throws(() => schema.parse({ kind: 'nope', title: 't' }))
 })
 
+test('show payload preserves the issue #1 session/target metadata', () => {
+  const inv = TYPERT.invocations.find((i) => i.method === 'show')
+  const schema = inv.parameters[0].codec.schema
+  const payload = {
+    kind: 'permission', title: 't', text: 'b',
+    sessionId: 's1', target: 'approval', sessionIds: ['s1', 's2'], interactionKey: 'approval:3',
+  }
+  const parsed = schema.parse(payload)
+  assert.equal(parsed.sessionId, 's1')
+  assert.equal(parsed.target, 'approval')
+  assert.deepEqual(parsed.sessionIds, ['s1', 's2'])
+  assert.equal(parsed.interactionKey, 'approval:3')
+  assert.throws(() => schema.parse({ kind: 'completed', title: 't', target: 'bogus' }))
+})
+
 test('config schema round-trips the default desktop config', () => {
   const inv = TYPERT.invocations.find((i) => i.method === 'updateConfig')
   const schema = inv.result.schema
