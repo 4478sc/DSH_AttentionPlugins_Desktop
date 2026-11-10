@@ -21,8 +21,9 @@ jobs:
           node --check lib/typert.host.js
           node --check lib/client.js
           node --check lib/toast-registry.js
+          node --check lib/host-events.js
       - name: Manifest, identity and approval-ledger tests
-        run: node tests/manifest.test.mjs && node tests/approval-ledger.test.mjs && node tests/toast-registry.test.mjs && node tests/client-logic.test.mjs
+        run: node tests/manifest.test.mjs && node tests/approval-ledger.test.mjs && node tests/toast-registry.test.mjs && node tests/host-events.test.mjs && node tests/client-logic.test.mjs
       - name: Syntax (python host)
         run: python -m py_compile lib/toast_host.py
       - name: Syntax (powershell host)
