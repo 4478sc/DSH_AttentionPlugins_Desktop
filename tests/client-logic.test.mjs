@@ -223,6 +223,15 @@ test('resolveUiClick opens by session id, not by title', () => {
   assert.deepEqual(api.resolveUiClick({ target: 'summary', sessionIds: ['session-a', 'session-b'] }, byId), { action: 'summary', sessionId: null })
 })
 
+test('pendingInteractionFor only focuses the current interaction', () => {
+  const status = { pendingInteraction: { key: 'approval:1', kind: 'approval' } }
+  assert.equal(api.pendingInteractionFor(status, 'approval:1').key, 'approval:1')
+  assert.equal(api.pendingInteractionFor(status, 'approval:2'), null, 'a replaced approval must not be focused')
+  assert.equal(api.pendingInteractionFor(status, '').key, 'approval:1')
+  assert.equal(api.pendingInteractionFor({ pendingInteraction: null }, 'approval:1'), null)
+  assert.equal(api.pendingInteractionFor(null, 'approval:1'), null)
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')

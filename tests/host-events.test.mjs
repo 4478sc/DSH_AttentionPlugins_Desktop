@@ -35,6 +35,13 @@ test('click queue deduplicates, bounds and acknowledges events', () => {
   assert.deepEqual(queue.list(0), [])
 })
 
+test('closed lines never enter the click queue', () => {
+  const queue = createClickQueue()
+  const closed = parseHostEvent('{"event":"closed","id":"toast-1","reason":"dismiss"}')
+  assert.equal(closed.type, 'closed')
+  assert.equal(queue.size, 0, 'close button must not navigate')
+})
+
 test('click queue carries the session/target snapshot', () => {
   const queue = createClickQueue()
   const item = queue.push({
