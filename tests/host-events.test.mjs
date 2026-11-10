@@ -34,3 +34,21 @@ test('click queue deduplicates, bounds and acknowledges events', () => {
   assert.equal(queue.size, 0)
   assert.deepEqual(queue.list(0), [])
 })
+
+test('click queue carries the session/target snapshot', () => {
+  const queue = createClickQueue()
+  const item = queue.push({
+    id: 'toast-7',
+    sessionId: 'session-a',
+    kind: 'permission',
+    target: 'approval',
+    sessionIds: ['session-a'],
+    interactionKey: 'approval:9',
+  }, 100)
+  assert.equal(item.sessionId, 'session-a')
+  assert.equal(item.kind, 'permission')
+  assert.equal(item.target, 'approval')
+  assert.deepEqual(item.sessionIds, ['session-a'])
+  assert.equal(item.interactionKey, 'approval:9')
+  assert.equal(queue.list(0)[0].id, 'toast-7')
+})

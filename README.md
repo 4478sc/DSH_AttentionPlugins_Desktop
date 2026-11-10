@@ -100,6 +100,14 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 - WPF：卡片点击走同一套 `clicked → closed click`，✕ 只 `dismiss`，并设置 `Handled` 防止事件冒泡成两次点击。
 - Node：`lib/host-events.js` 解析事件；同 id 500ms 内去重，`closed` 时删除注册表目标。
 
+### 点击导航（issue #1 第 3 步）
+
+- 宿主新增 `getUiEvents(sinceSeq)` / `ackUiEvents(seqs)`，客户端 500ms 轮询；
+- 点击时用 `sessionId` 查 `ctx.sessions.open(sessionId)`，同名会话不会被标题混淆；
+- 目标会话已删除/客户端不可用时，弹一条「无法打开会话」提示，不误开其他会话；
+- 同一 id 只处理一次，超过 60 秒的点击事件丢弃；
+- 汇总通知的点击暂不打开任意会话，会话选择列表在后续 PR 接入。
+
 ## 安装
 
 要求：DSH 桌面版 ≥ 0.1.7（验证于 0.2.1-rc.3 / 0.2.0-rc.3），Windows 需 PowerShell 5.1，Linux 需 python3 + PyGObject。
@@ -204,7 +212,11 @@ GTK3 on Linux).
   `id -> target` registry so later click navigation never parses titles or bodies.
 - Native click events (issue #1 step 2): GTK/WPF card clicks emit `clicked` then
   `closed reason=click`; the ✕ emits only `closed reason=dismiss`. Node deduplicates
-  clicks and drops the target on close. Client navigation arrives in PR 3.
+  clicks and drops the target on close.
+- Click navigation (issue #1 step 3): the host exposes `getUiEvents` / `ackUiEvents`;
+  the client polls and calls `ctx.sessions.open(sessionId)`. Missing sessions show a
+  "Cannot open session" toast instead of opening another one. Summary click navigation
+  waits for a session picker in PR 5.
 - Install from a tarball (`dsh plugin --profile desktop add <tgz>`); never use
   `link:` for the installed copy.
 - MIT. Built on attention-plugins (MIT, © zjbc2000) and inspired by
