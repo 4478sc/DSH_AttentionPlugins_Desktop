@@ -108,6 +108,13 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 - 同一 id 只处理一次，超过 60 秒的点击事件丢弃；
 - 汇总通知的点击暂不打开任意会话，会话选择列表在后续 PR 接入。
 
+### 待交互定位（issue #1 第 4 步）
+
+- 点击提问/审批通知打开会话后，读取 `uiSession.sessionStatus`，只在 `interactionKey` 仍匹配时定位；
+- 优先查找 `data-pending-interaction-key` / `data-pending-key` / `data-approval-key` 标记，找到后 `scrollIntoView` + `focus`；
+- 没有标记时回退到 `[data-conversation-scroll]` 滚到底部；
+- 审批/提问已被处理或替换时不再定位，✕ 仍然只关闭、不导航。
+
 ## 安装
 
 要求：DSH 桌面版 ≥ 0.1.7（验证于 0.2.1-rc.3 / 0.2.0-rc.3），Windows 需 PowerShell 5.1，Linux 需 python3 + PyGObject。
@@ -217,6 +224,10 @@ GTK3 on Linux).
   the client polls and calls `ctx.sessions.open(sessionId)`. Missing sessions show a
   "Cannot open session" toast instead of opening another one. Summary click navigation
   waits for a session picker in PR 5.
+- Pending focus (issue #1 step 4): approval/question clicks check the
+  `uiSession` pending key, then scroll/focus the marked pending area (falling back
+  to the transcript bottom). A resolved/replaced pending interaction is not focused;
+  the ✕ still only closes the toast.
 - Install from a tarball (`dsh plugin --profile desktop add <tgz>`); never use
   `link:` for the installed copy.
 - MIT. Built on attention-plugins (MIT, © zjbc2000) and inspired by
