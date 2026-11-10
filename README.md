@@ -72,11 +72,26 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 |---|---|
 | `lib/client.js` | 浏览器端：设置页、主线标记、通知引擎、门控、remote 调用 |
 | `lib/index.js` | 宿主端：配置存储、常驻宿主进程生命周期、Typert 服务 |
+| `lib/toast-registry.js` | 通知 id → 会话/目标元数据的有界、带 TTL 注册表 |
 | `lib/typert.host.js` | Typert 清单（zod v4 codec） |
 | `lib/toast_host.ps1` | Windows 浮窗宿主（WPF，异步读 stdin，DPI 感知） |
 | `lib/toast_host.py` | Linux 浮窗宿主（GTK3 / XWayland override-redirect） |
 | `tests/` | 清单/协议测试（`node --test`） |
 | `scripts/smoke-toast.ps1` | 浮窗冒烟：起宿主、弹一张、断言自动关闭 |
+
+### 通知身份契约（issue #1 第 1 步）
+
+每条 `show()` 现在带 `sessionId` / `target` / `sessionIds` / `interactionKey`，宿主用 `lib/toast-registry.js` 记住 `id → 目标`，后续点击导航只按 id 查表，不解析标题或正文。
+
+| 字段 | 含义 |
+|---|---|
+| `id` | 稳定通知 id：普通事件 `<sessionId>:<kind>:<serial>`，审批 `pending:<seq>`，汇总 `summary:<waveSeq>` |
+| `sessionId` | 该通知对应的会话；汇总时取列表第一项 |
+| `target` | `session` / `approval` / `question` / `summary` |
+| `sessionIds` | 汇总通知关联的支线会话列表 |
+| `interactionKey` | 待审批的交互 key，供后续定位审批区域使用 |
+
+本步只建立契约和 id 映射，原生点击事件与客户端导航在后续 PR 接入。
 
 ## 安装
 
@@ -177,6 +192,10 @@ GTK3 on Linux).
   [dsh-approval-ledger](https://github.com/feely0208/dsh-approval-ledger) but do **not**
   pop a second toast. The settings page shows the ledger connection, recent stats and
   the last five decisions.
+- Notification identity contract (issue #1 step 1): each `show()` carries
+  `sessionId`, `target`, `sessionIds` and `interactionKey`; the host keeps a bounded
+  `id -> target` registry so later click navigation never parses titles or bodies.
+  Native click events and client navigation arrive in the following PRs.
 - Install from a tarball (`dsh plugin --profile desktop add <tgz>`); never use
   `link:` for the installed copy.
 - MIT. Built on attention-plugins (MIT, © zjbc2000) and inspired by

@@ -119,6 +119,66 @@ test('the approvalToasts and permission switches gate the pending toast', () => 
   }
 })
 
+test('normalizes notification identity and navigation targets', () => {
+  assert.equal(api.targetForKind('permission'), 'approval')
+  assert.equal(api.targetForKind('question'), 'question')
+  assert.equal(api.targetForKind('sidelinedone'), 'summary')
+  assert.equal(api.targetForKind('completed'), 'session')
+
+  const approval = api.normalizeToastPayload({
+    kind: 'permission', title: 't', sessionId: 's1', interactionKey: 'approval:1',
+  })
+  assert.equal(approval.target, 'approval')
+  assert.equal(approval.sessionId, 's1')
+  assert.equal(approval.interactionKey, 'approval:1')
+  assert.match(approval.id, /^s1:permission:\d+$/)
+
+  const summary = api.normalizeToastPayload({
+    id: 'summary:9', kind: 'sidelinedone', title: 't', sessionIds: ['a', 'b'],
+  })
+  assert.equal(summary.id, 'summary:9')
+  assert.equal(summary.target, 'summary')
+  assert.deepEqual(summary.sessionIds, ['a', 'b'])
+  assert.equal(summary.sessionId, 'a')
+
+  const single = api.normalizeToastPayload({ kind: 'sidelinedone', sessionId: 'solo', title: 't' })
+  assert.deepEqual(single.sessionIds, ['solo'])
+})
+
+test('summary only lists aggregated side-line sessions, not the main-line one', async () => {
+  const events = []
+  const engine = new api.NotificationEngine({
+    aggregateEnabled: () => true,
+    alertAction: (kind, id) => (id === 'A' ? 'alert' : 'aggregate'),
+    titleOf: (id) => 'S' + id,
+    detailOf: () => ({ maxTurnErrorSeq: 0, failureMessage: null, lastAgentError: null, finalText: '' }),
+    runningChildren: () => 0,
+    waitForSubagents: () => false,
+    emit: (event) => events.push(event),
+    settle: () => Promise.resolve(),
+  })
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+  engine.seed({ byId: {
+    A: { id: 'A', running: true },
+    B: { id: 'B', running: true },
+    C: { id: 'C', running: true },
+  } })
+  engine.observeStatus('B', false)
+  await flush()
+  engine.observeStatus('C', false)
+  await flush()
+  engine.observeStatus('A', false)
+  await flush()
+
+  const summary = events.find((event) => event.kind === 'sidelinedone')
+  assert.ok(summary, 'side-line completion emits one summary')
+  assert.deepEqual(summary.sessionIds, ['B', 'C'])
+  assert.equal(summary.id, 'summary:1')
+  assert.match(summary.detail, /2 个后台会话已空闲|2 background sessions are idle/)
+  assert.ok(events.some((event) => event.kind === 'completed' && event.sessionId === 'A'))
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')
