@@ -1,4 +1,4 @@
-﻿param([switch]$PreviewMode, [int]$HoldSeconds = 0)
+param([switch]$PreviewMode, [int]$HoldSeconds = 0)
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName PresentationFramework
@@ -122,6 +122,13 @@ function Close-Toast($toast, [string]$reason) {
   Update-Layout
 }
 
+function Invoke-ToastClick([string]$id) {
+  $t = Get-ToastById $id
+  if ($null -eq $t -or $t.Closed) { return }
+  Write-Event @{ event = 'clicked'; id = $t.Id }
+  Close-Toast $t 'click'
+}
+
 function Start-Timer($toast) {
   if ($null -eq $toast -or $toast.Closed) { return }
   try { if ($toast.Timer) { $toast.Timer.Stop() } } catch { }
@@ -242,8 +249,8 @@ function Show-Toast($payload) {
   $card.Tag = $id
   $close.Tag = $id
 
-  $card.Add_MouseLeftButtonUp({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0) { Close-Toast $t0 'click' } })
-  $close.Add_MouseLeftButtonUp({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0) { Close-Toast $t0 'dismiss' } })
+  $card.Add_MouseLeftButtonUp({ param($sender, $e) Invoke-ToastClick ([string]$sender.Tag); $e.Handled = $true })
+  $close.Add_MouseLeftButtonUp({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0) { Close-Toast $t0 'dismiss' }; $e.Handled = $true })
   $card.Add_MouseEnter({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0 -and $t0.Timer) { try { $t0.Timer.Stop() } catch { } } })
   $card.Add_MouseLeave({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0) { Start-Timer $t0 } })
   $win.Add_Closed({ param($sender, $e) $t0 = Get-ToastById ([string]$sender.Tag); if ($t0) { [void]$script:Toasts.Remove($t0) }; Update-Layout })
@@ -263,6 +270,7 @@ function Handle-Command([string]$line) {
   switch ([string]$msg.cmd) {
     'show' { [void](Show-Toast $msg) }
     'close' { $t0 = Get-ToastById ([string]$msg.id); if ($t0) { Close-Toast $t0 'request' } }
+    'debug-click' { Invoke-ToastClick ([string]$msg.id) }
     'close-all' { foreach ($t0 in @($script:Toasts)) { Close-Toast $t0 'request' } }
     'config' {
       $c = $msg.config

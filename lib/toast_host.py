@@ -262,6 +262,11 @@ class Host:
             for t in list(self.toasts):
                 if t.id == str(msg.get("id")):
                     t.close("request")
+        elif cmd == "debug-click":
+            for t in list(self.toasts):
+                if t.id == str(msg.get("id")):
+                    t.clicked()
+                    break
         elif cmd == "close-all":
             for t in list(self.toasts):
                 t.close("request")

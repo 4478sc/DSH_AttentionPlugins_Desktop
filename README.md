@@ -73,6 +73,7 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 | `lib/client.js` | 浏览器端：设置页、主线标记、通知引擎、门控、remote 调用 |
 | `lib/index.js` | 宿主端：配置存储、常驻宿主进程生命周期、Typert 服务 |
 | `lib/toast-registry.js` | 通知 id → 会话/目标元数据的有界、带 TTL 注册表 |
+| `lib/host-events.js` | 原生 stdout 事件解析与去重点击队列 |
 | `lib/typert.host.js` | Typert 清单（zod v4 codec） |
 | `lib/toast_host.ps1` | Windows 浮窗宿主（WPF，异步读 stdin，DPI 感知） |
 | `lib/toast_host.py` | Linux 浮窗宿主（GTK3 / XWayland override-redirect） |
@@ -92,6 +93,12 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 | `interactionKey` | 待审批的交互 key，供后续定位审批区域使用 |
 
 本步只建立契约和 id 映射，原生点击事件与客户端导航在后续 PR 接入。
+
+### 原生点击事件（issue #1 第 2 步）
+
+- GTK：点击卡片先 `clicked` 再 `closed reason=click`；点击 ✕ 只发 `closed reason=dismiss`。
+- WPF：卡片点击走同一套 `clicked → closed click`，✕ 只 `dismiss`，并设置 `Handled` 防止事件冒泡成两次点击。
+- Node：`lib/host-events.js` 解析事件；同 id 500ms 内去重，`closed` 时删除注册表目标。
 
 ## 安装
 
@@ -195,7 +202,9 @@ GTK3 on Linux).
 - Notification identity contract (issue #1 step 1): each `show()` carries
   `sessionId`, `target`, `sessionIds` and `interactionKey`; the host keeps a bounded
   `id -> target` registry so later click navigation never parses titles or bodies.
-  Native click events and client navigation arrive in the following PRs.
+- Native click events (issue #1 step 2): GTK/WPF card clicks emit `clicked` then
+  `closed reason=click`; the ✕ emits only `closed reason=dismiss`. Node deduplicates
+  clicks and drops the target on close. Client navigation arrives in PR 3.
 - Install from a tarball (`dsh plugin --profile desktop add <tgz>`); never use
   `link:` for the installed copy.
 - MIT. Built on attention-plugins (MIT, © zjbc2000) and inspired by
