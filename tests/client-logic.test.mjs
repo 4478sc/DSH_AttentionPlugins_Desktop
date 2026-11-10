@@ -232,6 +232,21 @@ test('pendingInteractionFor only focuses the current interaction', () => {
   assert.equal(api.pendingInteractionFor(null, 'approval:1'), null)
 })
 
+test('buildSummaryItems lists every distinct session and disables deleted ones', () => {
+  const byId = {
+    a: { id: 'a', title: 'BetterProject' },
+    b: { id: 'b', title: 'BetterProject' },
+  }
+  const items = api.buildSummaryItems(['a', 'b', 'gone', 'a'], byId)
+  assert.deepEqual(items.map((item) => item.id), ['a', 'b', 'gone'])
+  assert.deepEqual(items.map((item) => item.exists), [true, true, false])
+  assert.equal(items[0].title, 'BetterProject')
+  assert.equal(items[1].title, 'BetterProject')
+  assert.equal(items[2].title.length > 0, true)
+  assert.deepEqual(api.buildSummaryItems([], byId), [])
+  assert.deepEqual(api.buildSummaryItems(null, byId), [])
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')
