@@ -51,6 +51,19 @@ test('show payload preserves the issue #1 session/target metadata', () => {
   assert.throws(() => schema.parse({ kind: 'completed', title: 't', target: 'bogus' }))
 })
 
+test('ui event schema round-trips a click target', () => {
+  const inv = TYPERT.invocations.find((i) => i.method === 'getUiEvents')
+  const schema = inv.result.schema
+  const value = {
+    seq: 1,
+    events: [{
+      seq: 1, id: 'toast-1', sessionId: 's1', kind: 'completed',
+      target: 'session', sessionIds: ['s1'], interactionKey: null, at: 123,
+    }],
+  }
+  assert.deepEqual(schema.parse(value), value)
+})
+
 test('config schema round-trips the default desktop config', () => {
   const inv = TYPERT.invocations.find((i) => i.method === 'updateConfig')
   const schema = inv.result.schema

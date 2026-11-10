@@ -211,6 +211,18 @@ test('summary includes the last side-line session when every session aggregates'
   assert.match(summary.detail, /3 个后台会话已空闲|3 background sessions are idle/)
 })
 
+test('resolveUiClick opens by session id, not by title', () => {
+  const byId = {
+    'session-a': { id: 'session-a', title: 'BetterProject' },
+    'session-b': { id: 'session-b', title: 'BetterProject' },
+  }
+  assert.deepEqual(api.resolveUiClick({ sessionId: 'session-a', target: 'session' }, byId), { action: 'open', sessionId: 'session-a' })
+  assert.deepEqual(api.resolveUiClick({ sessionId: 'session-b', target: 'session' }, byId), { action: 'open', sessionId: 'session-b' })
+  assert.deepEqual(api.resolveUiClick({ sessionId: 'gone', target: 'session' }, byId), { action: 'missing', sessionId: 'gone' })
+  assert.deepEqual(api.resolveUiClick({ sessionId: null, target: 'session' }, byId), { action: 'missing', sessionId: null })
+  assert.deepEqual(api.resolveUiClick({ target: 'summary', sessionIds: ['session-a', 'session-b'] }, byId), { action: 'summary', sessionId: null })
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')
