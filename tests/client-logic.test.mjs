@@ -247,6 +247,25 @@ test('buildSummaryItems lists every distinct session and disables deleted ones',
   assert.deepEqual(api.buildSummaryItems(null, byId), [])
 })
 
+test('openSessionWith uses uiWorkspace.openSession', () => {
+  const calls = []
+  const workspace = { openSession: (id) => calls.push(id) }
+  assert.equal(api.openSessionWith(workspace, 'session-a'), true)
+  assert.deepEqual(calls, ['session-a'])
+  assert.equal(api.openSessionWith({}, 'session-a'), false)
+  assert.equal(api.openSessionWith(null, 'session-a'), false)
+})
+
+test('retainSession falls back to mainView retention', () => {
+  const calls = []
+  const reference = { ready: Promise.resolve(), release() {} }
+  const sessions = { retain: (id, options) => { calls.push([id, options]); return reference } }
+  assert.equal(api.retainSession(sessions, 'session-a'), reference)
+  assert.deepEqual(calls, [['session-a', { source: 'mainView' }]])
+  assert.throws(() => api.retainSession({}, 'session-a'))
+  assert.throws(() => api.retainSession(null, 'session-a'))
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')

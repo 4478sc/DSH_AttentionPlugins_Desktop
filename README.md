@@ -103,7 +103,7 @@ DSH 宿主（Node）  Typert 服务 attentionToast ──► 常驻浮窗进程
 ### 点击导航（issue #1 第 3 步）
 
 - 宿主新增 `getUiEvents(sinceSeq)` / `ackUiEvents(seqs)`，客户端 500ms 轮询；
-- 点击时用 `sessionId` 查 `ctx.sessions.open(sessionId)`，同名会话不会被标题混淆；
+- 点击时用 `sessionId` 调 `ctx.uiWorkspace.openSession(sessionId)`（与侧栏打开会话同一路径）；旧版本没有该服务时回退到 `sessions.retain(id, { source: 'mainView' })`；
 - 目标会话已删除/客户端不可用时，弹一条「无法打开会话」提示，不误开其他会话；
 - 同一 id 只处理一次，超过 60 秒的点击事件丢弃；
 - 汇总通知的点击会打开关联会话列表（见第 5 步）。
@@ -228,9 +228,10 @@ GTK3 on Linux).
   `closed reason=click`; the ✕ emits only `closed reason=dismiss`. Node deduplicates
   clicks and drops the target on close.
 - Click navigation (issue #1 step 3): the host exposes `getUiEvents` / `ackUiEvents`;
-  the client polls and calls `ctx.sessions.open(sessionId)`. Missing sessions show a
-  "Cannot open session" toast instead of opening another one. Summary clicks open a
-  linked-session picker (step 5).
+  the client polls and calls `ctx.uiWorkspace.openSession(sessionId)` — the same path
+  as the sidebar. Older hosts fall back to `sessions.retain(id, { source: 'mainView' })`.
+  Missing sessions show a "Cannot open session" toast instead of opening another one.
+  Summary clicks open a linked-session picker (step 5).
 - Pending focus (issue #1 step 4): approval/question clicks check the
   `uiSession` pending key, then scroll/focus the marked pending area (falling back
   to the transcript bottom). A resolved/replaced pending interaction is not focused;
