@@ -179,6 +179,38 @@ test('summary only lists aggregated side-line sessions, not the main-line one', 
   assert.ok(events.some((event) => event.kind === 'completed' && event.sessionId === 'A'))
 })
 
+test('summary includes the last side-line session when every session aggregates', async () => {
+  const events = []
+  const engine = new api.NotificationEngine({
+    aggregateEnabled: () => true,
+    alertAction: () => 'aggregate',
+    titleOf: (id) => 'S' + id,
+    detailOf: () => ({ maxTurnErrorSeq: 0, failureMessage: null, lastAgentError: null, finalText: '' }),
+    runningChildren: () => 0,
+    waitForSubagents: () => false,
+    emit: (event) => events.push(event),
+    settle: () => Promise.resolve(),
+  })
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+  engine.seed({ byId: {
+    A: { id: 'A', running: true },
+    B: { id: 'B', running: true },
+    C: { id: 'C', running: true },
+  } })
+  engine.observeStatus('B', false)
+  await flush()
+  engine.observeStatus('C', false)
+  await flush()
+  engine.observeStatus('A', false)
+  await flush()
+
+  const summary = events.find((event) => event.kind === 'sidelinedone')
+  assert.ok(summary)
+  assert.deepEqual([...summary.sessionIds].sort(), ['A', 'B', 'C'])
+  assert.match(summary.detail, /3 个后台会话已空闲|3 background sessions are idle/)
+})
+
 test('predictRisk flags dangerous approval text and stays advisory for the rest', () => {
   assert.equal(api.predictRisk('escalate sandbox to danger-full-access: 验证'), 'high')
   assert.equal(api.predictRisk('bash: rm -rf build/'), 'high')
